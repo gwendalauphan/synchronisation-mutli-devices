@@ -1,0 +1,5 @@
+*.json
+*.env
+checksums/
+sync_logs/
+*.log
