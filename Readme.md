@@ -121,12 +121,12 @@ systemctl --user status sync-loqseq.service
 ---
 
 
-gwendalauphan@gwendalauphan-Latitude-5520:~$ lsof | grep inotify 
+:~$ lsof | grep inotify 
 
-gwendalauphan@gwendalauphan-Latitude-5520:~$ ps -eo pid,pgid,comm | grep "172952"
+:~$ ps -eo pid,pgid,comm | grep "172952"
  172952  171398 inotifywait
-gwendalauphan@gwendalauphan-Latitude-5520:~$ 
-gwendalauphan@gwendalauphan-Latitude-5520:~$ ps -eo pid,pgid,ppid,comm | grep "171398"
+:~$ 
+:~$ ps -eo pid,pgid,ppid,comm | grep "171398"
  171398  171398  171383 sync_logseq.sh
  172952  171398  171398 inotifywait
  172953  171398  171398 sync_logseq.sh
