@@ -36,13 +36,16 @@ case $1 in
 esac
 
 # Détermine le chemin absolu du répertoire du script
-SCRIPT_DIR=$(dirname "$(realpath "$0")")
+TEST_DIR=$(dirname "$(realpath "$0")")
+PROJECT_DIR="$TEST_DIR/.."  # Répertoire racine du projet
+CONFIG_DIR="$PROJECT_DIR/config"
+SCRIPT_DIR="$PROJECT_DIR/scripts"
 
 # Dossiers de traitement temporaire
 TMP_DIR=$(mktemp -d)
 
 # Récupérer les variables d'environnement
-source "$SCRIPT_DIR/config_test_$MODE_TEST.env"
+source "$CONFIG_DIR/config_test_$MODE_TEST.env"
 
 # Mode de sortie (terminal ou fichier)
 OUTPUT_MODE="file"  # Options: terminal, file
@@ -56,13 +59,16 @@ FILES_TO_SYNC="$TMP_DIR/cloud_files.txt"
 LOCK_FILE="$TMP_DIR/sync.lock"
 PATCH_DIR="$TMP_DIR/patches"
 
-LOG_FILE="$SCRIPT_DIR/sync.log"
+LOG_DIR="$TEST_DIR/sync_logs"
+LOG_FILE="$LOG_DIR/sync.log"
+
+mkdir -p $LOG_DIR
 
 # PID du processus `inotifywait`
 INOTIFY_PID_FILE="$TMP_DIR/inotify.pid"
 INOTIFY_LOOP_FILE="$TMP_DIR/inotify.loop"
 
-source "$SCRIPT_DIR/../functions.sh"
+source "$SCRIPT_DIR/functions.sh"
 
 ##############################################################################
 #  Scénario Numéro 1 - Test du download

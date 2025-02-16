@@ -13,20 +13,22 @@ trap cleanup EXIT SIGINT SIGTERM SIGHUP
 
 # Détermine le chemin absolu du répertoire du script
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
+PROJECT_DIR="$SCRIPT_DIR/.."  # Répertoire racine du projet
+CONFIG_DIR="$PROJECT_DIR/config"
 
 # Dossiers de traitement temporaire
 TMP_DIR=$(mktemp -d)
 
 # Récupérer les variables d'environnement
-source "$SCRIPT_DIR/config.env"
+source "$CONFIG_DIR/config.env"
 
 # Mode de sortie (terminal ou fichier)
 OUTPUT_MODE="file"  # Options: terminal, file
 
 
 # Définir les répertoires basés sur le chemin du script
-CHECKSUM_DIR="$SCRIPT_DIR/checksums"
-LOG_DIR="$SCRIPT_DIR/sync_logs"
+CHECKSUM_DIR="$PROJECT_DIR/checksums"
+LOG_DIR="$PROJECT_DIR/sync_logs"
 
 mkdir -p $CHECKSUM_DIR
 mkdir -p $LOG_DIR

@@ -15,9 +15,6 @@ Pour cela, nous allons utiliser:
 
 
 
-
-
-
 Commande pour afficher tous les processus liés au script: (mettre "inotifywa" ou "inotify")
 ```bash
 lsof | grep inotifywa | awk '{print $2}' | while read pid; do
@@ -63,7 +60,7 @@ vi ~/.config/systemd/user/init-sync-loqseq.service
 
 ```
 [Unit]
-Description=Vérification de la connexion au remote Rclone
+Description=Ve  rification de la connexion au remote Rclone
 After=default.target
 
 [Service]
@@ -75,7 +72,7 @@ StartLimitInterval=30s
 StartLimitBurst=5
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 ```
 
 # sync-loqseq.service 

@@ -1,0 +1,16 @@
+[Unit]
+Description=Synchronisation de fichiers pour Logseq avec inotify et rclone
+#OnFailure=serviceFailure (a faire)
+Requires=init-sync-logseq.service
+After=init-sync-logseq.service
+
+[Service]
+Type=simple
+ExecStart={{ sync_script_path }}
+Restart=on-failure
+RestartSec={{ sync_restart_sec | default(5) }}s
+StartLimitInterval={{ sync_start_limit_interval | default(30) }}s
+StartLimitBurst={{ sync_start_limit_burst | default(5) }}
+
+[Install]
+WantedBy=default.target

@@ -475,7 +475,7 @@ check_init_loop(){
     while true; do
         if check_internet; then
             if check_remote_connection; then
-                echo_log "Test de la connexion au remote réussite. Lancement de sync-logseq.service ...."
+                echo_log "Test de la connexion au remote réussite."
                 exit 0
             else
                 exit 1

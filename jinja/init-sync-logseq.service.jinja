@@ -1,0 +1,15 @@
+[Unit]
+Description=Check connection to remote Rclone
+#OnFailure=serviceFailure (a faire)
+After=default.target
+
+[Service]
+Type=oneshot
+ExecStart={{ init_sync_script_path }}
+Restart=on-failure
+RestartSec={{ init_sync_restart_sec | default(5) }}s
+StartLimitInterval={{ init_sync_start_limit_interval | default(30) }}s
+StartLimitBurst={{ init_sync_start_limit_burst | default(5) }}
+
+[Install]
+WantedBy=default.target

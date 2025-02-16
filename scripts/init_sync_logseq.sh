@@ -13,7 +13,8 @@ cleanup_init() {
     if [ $CLEANUP_DONE -eq 0 ]; then
         local SIGN=${1:-1}  # Assigne 1 à SIGN si aucun argument n'est fourni #Il faut mettre SIGN=1 par défaut 
         CLEANUP_DONE=1
-        echo_log "Le script a été interrompu. Nettoyage en cours..."
+        echo_log "Le script a été interrompu par un signal : $SIGN"
+        echo_log "Nettoyage en cours..."
         rm -rf "$TMP_DIR" 2>/dev/null
 
         # -- Tuer recursivement tous les processus enfants --
@@ -37,18 +38,20 @@ trap cleanup_init EXIT SIGINT SIGTERM SIGHUP
 
 # Détermine le chemin absolu du répertoire du script
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
+PROJECT_DIR="$SCRIPT_DIR/.."  # Répertoire racine du projet
+CONFIG_DIR="$PROJECT_DIR/config"
 
 # Dossiers de traitement temporaire
 TMP_DIR=$(mktemp -d)
 
 # Récupérer les variables d'environnement
-source "$SCRIPT_DIR/config.env"
+source "$CONFIG_DIR/config.env"
 
 # Mode de sortie (terminal ou fichier)
 OUTPUT_MODE="file"  # Options: terminal, file
 
 # Définir les répertoires basés sur le chemin du script
-LOG_DIR="$SCRIPT_DIR/sync_logs"
+LOG_DIR="$PROJECT_DIR/sync_logs"
 
 LOG_FILE="$LOG_DIR/sync.log"
 
