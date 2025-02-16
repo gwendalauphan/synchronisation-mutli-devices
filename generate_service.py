@@ -21,7 +21,7 @@ if not os.path.isfile(template_file):
     sys.exit(1)
 
 # Lire le fichier template
-with open(template_file, 'r') as file:
+with open(template_file, "r") as file:
     template_content = file.read()
 
 # Charger le template Jinja

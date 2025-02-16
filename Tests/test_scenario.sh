@@ -260,7 +260,7 @@ merge_remote
 assert_file_exists "$REMOTE_DIR/file1.txt"
 assert_file_content "$REMOTE_DIR/file1.txt" "$MERGED_CONTENT_FILE1"
 
-# On s'attend à ce que file3.txt ait été créé sur remote (puisque local l'avait créé) 
+# On s'attend à ce que file3.txt ait été créé sur remote (puisque local l'avait créé)
 # malgré qu'il est été supprimé en remote
 assert_file_exists "$REMOTE_DIR/file3.txt"
 assert_file_content "$REMOTE_DIR/file3.txt" "Local a changé le contenu de file3"
@@ -274,7 +274,7 @@ assert_file_exists "$REMOTE_DIR/file5.txt"
 # - file2 local a changé, remote a changé => votre outil doit décider du contenu final.
 #   (On n’a pas d’exemple d’un “merge conflict” textuel pour file2, mais vous pouvez en créer un.)
 # - file3 a été supprimé sur remote, mais localement encore présent => votre outil
-#   doit décider de le supprimer en remote, ou de le conserver, etc.  
+#   doit décider de le supprimer en remote, ou de le conserver, etc.
 #   Ici, on ne force rien à la main.
 
 echo "[INFO] Étape t4 : Merge local->remote effectué."
@@ -309,7 +309,7 @@ echo "[INFO] Étape t5 : Final check OK (si pas d'erreur ci-dessus)."
 echo "--------------------------------------"
 
 echo "[SUCCESS] Tous les tests du scénario 1 sont passés avec succès !"
-echo 
+echo
 echo
 
 rm -rf "$TMP_DIR"
