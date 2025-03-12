@@ -28,7 +28,6 @@ with open(template_file, "r") as file:
 template = Template(template_content)
 
 # Définir les variables d'environnement pour le rendu
-# Définir les variables d'environnement pour le rendu
 context = {
     "init_sync_script_path": script_directory + "/" + os.getenv("INIT_SYNC_SCRIPT_NAME"),
     "init_sync_restart_sec": os.getenv("INIT_SYNC_RESTART_SEC"),
