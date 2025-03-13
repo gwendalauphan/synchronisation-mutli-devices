@@ -137,6 +137,7 @@ systemctl --user status sync-loqseq.service
 Penser à faire de connexion à Rclone avant le lancement du script et si erreur qu'il déclenche:
 rclone config reconnect GoogleDrivePersoSyncLogseq: --config="/home/gwendalauphan/.config/rclone/rclone.conf" --auto-confirm
 
-
+# Repos source
+Base: https://github.com/gwendalauphan/synchronisation-mutli-devices.git
 
     
