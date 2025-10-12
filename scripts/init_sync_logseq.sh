@@ -8,10 +8,37 @@ PGID=$(ps -o pgid= $$ | grep -o '[0-9]*')
 # Variable pour éviter les appels multiples à cleanup
 CLEANUP_DONE=0
 
+# Définir un trap pour les signaux d'interruption courants
+trap cleanup_init EXIT SIGINT SIGTERM SIGHUP
+
+# Détermine le chemin absolu du répertoire du script
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
+PROJECT_DIR="$SCRIPT_DIR/.."  # Répertoire racine du projet
+CONFIG_DIR="$PROJECT_DIR/config"
+
+# Dossiers de traitement temporaire
+TMP_DIR=$(mktemp -d)
+
+# Récupérer les variables d'environnement
+source "$CONFIG_DIR/config.env"
+
+# Mode de sortie (terminal ou fichier)
+OUTPUT_MODE="file"  # Options: terminal, file
+
+# Définir les répertoires basés sur le chemin du script
+LOG_DIR="$PROJECT_DIR/sync_logs"
+LOG_FILE="$LOG_DIR/sync.log"
+
+source "$SCRIPT_DIR/functions.sh"
+source "$SCRIPT_DIR/utils.sh"
+
+
+# ---------- End of config section ---------- #
+
 # Fonction de nettoyage à appeler lors de l'interruption
 cleanup_init() {
     if [ $CLEANUP_DONE -eq 0 ]; then
-        local SIGN=${1:-1}  # Assigne 1 à SIGN si aucun argument n'est fourni #Il faut mettre SIGN=1 par défaut 
+        local SIGN=${1:-1}  # Assigne 1 à SIGN si aucun argument n'est fourni #Il faut mettre SIGN=1 par défaut
         CLEANUP_DONE=1
         echo_log "Le script a été interrompu par un signal : $SIGN"
         echo_log "Nettoyage en cours..."
@@ -32,31 +59,23 @@ cleanup_init() {
     fi
 }
 
+check_init_loop(){
+    while true; do
+        if check_internet; then
+            if check_remote_connection; then
+                echo_log "Test de la connexion au remote réussite."
+                exit 0
+            else
+                exit 1
+            fi
+        else
+            echo_log "Pas de connexion. Nouvelle tentative de check_remote_loop dans $RETRY_INTERNET_INTERVAL secondes."
+            sleep "$RETRY_INTERNET_INTERVAL"
+        fi
+    done
+}
 
-# Définir un trap pour les signaux d'interruption courants
-trap cleanup_init EXIT SIGINT SIGTERM SIGHUP
-
-# Détermine le chemin absolu du répertoire du script
-SCRIPT_DIR=$(dirname "$(realpath "$0")")
-PROJECT_DIR="$SCRIPT_DIR/.."  # Répertoire racine du projet
-CONFIG_DIR="$PROJECT_DIR/config"
-
-# Dossiers de traitement temporaire
-TMP_DIR=$(mktemp -d)
-
-# Récupérer les variables d'environnement
-source "$CONFIG_DIR/config.env"
-
-# Mode de sortie (terminal ou fichier)
-OUTPUT_MODE="file"  # Options: terminal, file
-
-# Définir les répertoires basés sur le chemin du script
-LOG_DIR="$PROJECT_DIR/sync_logs"
-
-LOG_FILE="$LOG_DIR/sync.log"
-
-source "$SCRIPT_DIR/functions.sh"
-
+# Main script execution starts here
 echo_log "Lancement de init_sync_logseq.sh"
 
 rotate_logs_loop &

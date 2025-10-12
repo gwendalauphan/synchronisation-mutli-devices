@@ -8,10 +8,6 @@ PGID=$(ps -o pgid= $$ | grep -o '[0-9]*')
 # Variable pour éviter les appels multiples à cleanup
 CLEANUP_DONE=0
 
-# Définir un trap pour capturer les signaux et effectuer le nettoyage
-trap cleanup EXIT SIGINT SIGTERM
-
-
 # Vérification des arguments
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 simu|real"
@@ -38,37 +34,35 @@ esac
 # Détermine le chemin absolu du répertoire du script
 TEST_DIR=$(dirname "$(realpath "$0")")
 PROJECT_DIR="$TEST_DIR/.."  # Répertoire racine du projet
-CONFIG_DIR="$PROJECT_DIR/config"
 SCRIPT_DIR="$PROJECT_DIR/scripts"
-
-# Dossiers de traitement temporaire
-TMP_DIR=$(mktemp -d)
-
-# Récupérer les variables d'environnement
-source "$CONFIG_DIR/config_test_$MODE_TEST.env"
+CONFIG_DIR="$TEST_DIR/config"
 
 # Mode de sortie (terminal ou fichier)
 OUTPUT_MODE="file"  # Options: terminal, file
 
-CHECKSUM_FILE_REMOTE_PREVIOUS="$TMP_DIR/checksums_remote_previous.txt"
-CHECKSUM_FILE_REMOTE_CURRENT="$TMP_DIR/checksums_remote_current.txt"
-CHECKSUM_FILE_LOCAL_CURRENT="$TMP_DIR/checksums_local_current.txt"
+# Dossiers de traitement temporaire
+TMP_DIR=$(mktemp -d)
 
-FILES_TO_SYNC="$TMP_DIR/cloud_files.txt"
-
-LOCK_FILE="$TMP_DIR/sync.lock"
-PATCH_DIR="$TMP_DIR/patches"
-
+CHECKSUM_DIR="$TMP_DIR"
 LOG_DIR="$TEST_DIR/sync_logs"
-LOG_FILE="$LOG_DIR/sync.log"
 
+mkdir -p $CHECKSUM_DIR
 mkdir -p $LOG_DIR
 
-# PID du processus `inotifywait`
-INOTIFY_PID_FILE="$TMP_DIR/inotify.pid"
-INOTIFY_LOOP_FILE="$TMP_DIR/inotify.loop"
+# chargement de la config
+source "$SCRIPT_DIR/config.sh"
 
+# Récupérer les variables d'environnement
+source "$CONFIG_DIR/config_test_$MODE_TEST.env"
+
+source "$TEST_DIR/functions.sh"
+
+source "$SCRIPT_DIR/utils.sh"
 source "$SCRIPT_DIR/functions.sh"
+source "$SCRIPT_DIR/check_local.sh"
+
+# Définir un trap pour capturer les signaux et effectuer le nettoyage
+trap cleanup EXIT SIGINT SIGTERM SIGHUP
 
 ##############################################################################
 #  Scénario Numéro 1 - Test du download
@@ -90,32 +84,36 @@ source "$SCRIPT_DIR/functions.sh"
 ##############################################################################
 # Selon votre description, on veut une fusion de ce style :
 #   Ligne 1 commun
-#   _<<<<<<<<<<<<<
+#   _<<<<<<<<<<<<< from local
 #   Ligne 2 text 1
-#   _>>>>>>>>>>>>>
+#   ===============
 #   Ligne 2 text 2
 #   Ligne 2,5 text 2
+#   _>>>>>>>>>>>>> from remote
 #
 #   Ligne 3 commun
-#   _<<<<<<<<<<<<<
+#   _<<<<<<<<<<<<< from local
 #   Ligne 4 text 1
-#   _>>>>>>>>>>>>>
+#   ===============
 #   Ligne 4 text 2
+#   _>>>>>>>>>>>>> from remote
 #
 # Note : en Bash, attention aux sauts de ligne
 MERGED_CONTENT_FILE1="$(cat <<'EOF'
 Ligne 1 commun
-_<<<<<<<<<<<<<
+_<<<<<<<<<<<<< from local
 Ligne 2 text 1
-_>>>>>>>>>>>>>
+==============
 Ligne 2 text 2
 Ligne 2,5 text 2
+_>>>>>>>>>>>>> from remote
 
 Ligne 3 commun
-_<<<<<<<<<<<<<
+_<<<<<<<<<<<<< from local
 Ligne 4 text 1
-_>>>>>>>>>>>>>
+==============
 Ligne 4 text 2
+_>>>>>>>>>>>>> from remote
 EOF
 )"
 
@@ -381,9 +379,10 @@ echo "--------------------------------------"
 ######################################
 echo "=== Étape 3 : Conflit sur fileB.txt ==="
 
+# Simultanément, on synchronise les checksums
 trigger_changes_local &
 
-# 3.1 Simultanément, on modifie le fileB côté remote
+# 3.1 On modifie le fileB côté remote
 echo "Remote version B" | rclone rcat "$REMOTE_DIR/fileB.txt"
 
 sleep 1
@@ -394,15 +393,17 @@ echo "Local version B" > "$LOCAL_DIR/fileB.txt"
 sleep 10
 
 MERGED_CONTENT="$(cat <<'EOF'
-_<<<<<<<<<<<<<
+_<<<<<<<<<<<<< from local
 Local version B
-_>>>>>>>>>>>>>
+==============
 Remote version B
+_>>>>>>>>>>>>> from remote
 
 EOF
 )"
 
 # Vérification du merge
+echo "Vérification du merge de fileB.txt..."
 assert_file_content "$LOCAL_DIR/fileB.txt" "$MERGED_CONTENT"
 assert_file_content "$REMOTE_DIR/fileB.txt" "$MERGED_CONTENT"
 
@@ -489,10 +490,11 @@ sleep 5
 
 
 MERGED_CONTENT_CAS_1="$(cat <<'EOF'
-_<<<<<<<<<<<<<
+_<<<<<<<<<<<<< from local
 Modified A local
-_>>>>>>>>>>>>>
+==============
 Modified A remote
+_>>>>>>>>>>>>> from remote
 
 EOF
 )"
@@ -527,10 +529,11 @@ check_remote_loop &
 sleep 5
 
 MERGED_CONTENT_CAS_2="$(cat <<'EOF'
-_<<<<<<<<<<<<<
+_<<<<<<<<<<<<< from local
 Local edit on A
-_>>>>>>>>>>>>>
+==============
 Modified A remote
+_>>>>>>>>>>>>> from remote
 
 EOF
 )"
@@ -539,6 +542,9 @@ EOF
 assert_file_content "$LOCAL_DIR/fileA.txt" "$MERGED_CONTENT_CAS_2"
 assert_file_content "$REMOTE_DIR/fileA.txt" "$MERGED_CONTENT_CAS_2"
 echo "[INFO] Cas 2 Validé"
+
+echo "[SUCCESS] Tous les tests du scénario 3 sont passés avec succès !"
+echo "--------------------------------------"
 
 rm -rf "$TMP_DIR" 2>/dev/null
 rm -rf "$LOCK_FILE" 2>/dev/null

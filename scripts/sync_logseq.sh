@@ -3,51 +3,42 @@
 set -m
 set -euo pipefail  #S'assure de la robustesse du script
 
-PGID=$(ps -o pgid= $$ | grep -o '[0-9]*')
-
-# Variable pour éviter les appels multiples à cleanup
-CLEANUP_DONE=0
-
-# Définir un trap pour capturer les signaux et effectuer le nettoyage
-trap cleanup EXIT SIGINT SIGTERM SIGHUP
-
 # Détermine le chemin absolu du répertoire du script
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PROJECT_DIR="$SCRIPT_DIR/.."  # Répertoire racine du projet
+DATA_DIR="$PROJECT_DIR/data"
 CONFIG_DIR="$PROJECT_DIR/config"
-
-# Dossiers de traitement temporaire
-TMP_DIR=$(mktemp -d)
-
-# Récupérer les variables d'environnement
-source "$CONFIG_DIR/config.env"
 
 # Mode de sortie (terminal ou fichier)
 OUTPUT_MODE="file"  # Options: terminal, file
 
+# Dossiers de traitement temporaire
+TMP_DIR=$(mktemp -d)
 
 # Définir les répertoires basés sur le chemin du script
-CHECKSUM_DIR="$PROJECT_DIR/checksums"
-LOG_DIR="$PROJECT_DIR/sync_logs"
+CHECKSUM_DIR="$DATA_DIR/checksums"
+LOG_DIR="$DATA_DIR/sync_logs"
 
 mkdir -p $CHECKSUM_DIR
 mkdir -p $LOG_DIR
 
-CHECKSUM_FILE_REMOTE_PREVIOUS="$CHECKSUM_DIR/checksums_remote_previous.txt"
-CHECKSUM_FILE_REMOTE_CURRENT="$CHECKSUM_DIR/checksums_remote_current.txt"
-CHECKSUM_FILE_LOCAL_CURRENT="$CHECKSUM_DIR/checksums_local_current.txt"
+# chargement de la config
+source "$SCRIPT_DIR/config.sh"
 
-FILES_TO_SYNC="$CHECKSUM_DIR/cloud_files.txt"
-LOCK_FILE="$TMP_DIR/sync.lock"
-PATCH_DIR="$TMP_DIR/patches"
-
-LOG_FILE="$LOG_DIR/sync.log"
-
-# PID du processus `inotifywait`
-INOTIFY_PID_FILE="$TMP_DIR/inotify.pid"
-INOTIFY_LOOP_FILE="$TMP_DIR/inotify.loop"
+# Récupérer les variables d'environnement
+source "$CONFIG_DIR/config.env"
 
 source "$SCRIPT_DIR/functions.sh"
+source "$SCRIPT_DIR/utils.sh"
+source "$SCRIPT_DIR/check_local.sh"
+source "$SCRIPT_DIR/check_remote.sh"
+source "$SCRIPT_DIR/rotate_logs.sh"
+
+# Définir un trap pour capturer les signaux et effectuer le nettoyage
+trap cleanup EXIT SIGINT SIGTERM SIGHUP
+
+# ---------- End of config section ---------- #
+
 
 # Démarrage des processus enfants
 check_remote_loop &
