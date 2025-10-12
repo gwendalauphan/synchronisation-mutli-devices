@@ -15,6 +15,7 @@ trap cleanup_init EXIT SIGINT SIGTERM SIGHUP
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PROJECT_DIR="$SCRIPT_DIR/.."  # Répertoire racine du projet
 CONFIG_DIR="$PROJECT_DIR/config"
+DATA_DIR="$PROJECT_DIR/data"
 
 # Dossiers de traitement temporaire
 TMP_DIR=$(mktemp -d)
@@ -26,8 +27,10 @@ source "$CONFIG_DIR/config.env"
 OUTPUT_MODE="file"  # Options: terminal, file
 
 # Définir les répertoires basés sur le chemin du script
-LOG_DIR="$PROJECT_DIR/sync_logs"
+LOG_DIR="$DATA_DIR/sync_logs"
 LOG_FILE="$LOG_DIR/sync.log"
+
+mkdir -p $LOG_DIR
 
 source "$SCRIPT_DIR/functions.sh"
 source "$SCRIPT_DIR/utils.sh"
