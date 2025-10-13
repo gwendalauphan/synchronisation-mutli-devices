@@ -153,7 +153,7 @@ Requires=init-sync-logseq.service
 After=init-sync-logseq.service
 
 [Service]
-ExecStart=/home/gwendalauphan/Documents/Informatique/Projets/Synchronisation-multi-devices/sync_logseq.sh
+ExecStart=/home/<path>/sync_logseq.sh
 Restart=on-failure
 RestartSec=5s
 StartLimitInterval=30s
@@ -269,7 +269,7 @@ ps -eo pid,pgid,ppid,comm | grep "inotify"
 ### **Kill all related processes safely**
 
 ```bash
-lsof | grep inotifywa | grep "/home/gwendalauphan/Documents/Synchronisation-multi-devices" \
+lsof | grep inotifywa | grep "/home/<path>/Synchronisation-multi-devices" \
 | awk '{print $2}' | while read pid; do
     pgid=$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')
     if [[ -n "$pgid" ]]; then
