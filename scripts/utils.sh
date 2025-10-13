@@ -30,7 +30,7 @@ check_remote_connection(){
     STATUS=$?
     if [ ! $STATUS -eq 0 ]; then
         echo_log "ERROR - $REMOTE_DIR is unreachable"
-        timeout 2m rclone config reconnect GoogleDrivePersoSyncLogseq: --config="$CONFIG_PATH" "${RCLONE_LOG[@]}" --auto-confirm
+        timeout 2m rclone config reconnect "$REMOTE_DIR" --config="$CONFIG_PATH" "${RCLONE_LOG[@]}" --auto-confirm
         if [ $? -eq 0 ]; then
             echo_log "Reconnexion réussie."
         else
