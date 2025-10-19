@@ -10,7 +10,7 @@ CLEANUP_DONE=0
 
 # Vérification des arguments
 if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 simu|real"
+    echo "Usage: $0 local|real"
     exit 1
 fi
 
@@ -19,14 +19,14 @@ MODE_TEST=""
 
 # Gestion des arguments
 case $1 in
-    simu)
-        MODE_TEST="simu"
+    local)
+        MODE_TEST="local"
         ;;
     real)
         MODE_TEST="real"
         ;;
     *)
-        echo "Invalid argument. Use 'simu' or 'real'."
+        echo "Invalid argument. Use 'local' or 'real'."
         exit 1
         ;;
 esac
@@ -126,7 +126,9 @@ rm -f $CHECKSUM_FILE_LOCAL_CURRENT $CHECKSUM_FILE_REMOTE_PREVIOUS $CHECKSUM_FILE
 rm -rf "$LOCK_FILE"
 
 if [ "$MODE_TEST" = "real" ]; then
-    rclone delete "$REMOTE_DIR"
+    if rclone ls "$REMOTE_DIR" &>/dev/null; then
+        rclone delete "$REMOTE_DIR"
+    fi
 fi
 mkdir -p "$LOCAL_DIR" "$REMOTE_DIR"
 

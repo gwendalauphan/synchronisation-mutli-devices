@@ -116,10 +116,10 @@ Enter the test directory and run a scenario:
 
 ```bash
 cd Tests
-./test_scenario.sh simu|real
+./test_scenario.sh local|real
 ```
 
-* **simu** → simulates a remote folder locally
+* **local** → locallates a remote folder locally
 * **real** → uses the actual remote folder configured in `config.env`
 
 ---
